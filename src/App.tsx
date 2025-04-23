@@ -7,6 +7,7 @@ import ControlTray from "./components/control-tray/ControlTray";
 import AudioPulse from "./components/audio-pulse/AudioPulse";
 import ApiKeyPrompt from "./components/api-key-prompt/ApiKeyPrompt";
 import PromptSelector from "./components/prompt-selector/PromptSelector";
+import InfoModal from "./components/info-modal/InfoModal";
 import cn from "classnames";
 import {constants} from "./constants";
 import {useLiveAPIContext} from "./contexts/LiveAPIContext";
@@ -49,6 +50,7 @@ function AppContent() {
   const {connected, volume} = useLiveAPIContext();
   const [randomTurn, setRandomTurn] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
   const lastTurnTimeRef = useRef<number>(0);
 
   // Function to trigger random turning when speaking
@@ -92,6 +94,15 @@ function AppContent() {
         <span className="material-symbols-outlined">
           {sidebarOpen ? 'close' : 'menu'}
         </span>
+      </button>
+
+      {/* Info button */}
+      <button
+        className="info-button"
+        onClick={() => setInfoModalOpen(true)}
+        aria-label="Show information"
+      >
+        <span className="material-symbols-outlined">info</span>
       </button>
 
       {/* Overlay for mobile */}
@@ -191,6 +202,9 @@ function AppContent() {
           {/* put your own buttons here */}
         </ControlTray>
       </main>
+      
+      {/* Info Modal */}
+      <InfoModal isOpen={infoModalOpen} onClose={() => setInfoModalOpen(false)} />
     </div>
   );
 }

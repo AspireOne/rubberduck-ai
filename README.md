@@ -1,96 +1,54 @@
-# Live API - Web Console
+# Rubber Duck AI
 
-This repository contains a react-based starter app for using the [Live API](<[https://ai.google.dev/gemini-api](https://ai.google.dev/api/multimodal-live)>) over a websocket. It provides modules for streaming audio playback, recording user media such as from a microphone, webcam or screen capture as well as a unified log view to aid in development of your application.
+Quacky is an AI-powered rubber duck debugging assistant that helps you think through problems using Socratic questioning. Instead of just giving you answers, Quacky asks thoughtful questions to guide you toward your own solutions.
 
-[![Live API Demo](readme/thumbnail.png)](https://www.youtube.com/watch?v=J_q7JY1XxFE)
+As opposed to the normal LLM flow of asking LLMs for a solution, Quacky does NOT give you solutions,
+but instead helps you yourself to solve the problem.
 
-Watch the demo of the Live API [here](https://www.youtube.com/watch?v=J_q7JY1XxFE).
+## What is Rubber Duck Debugging?
+
+Rubber duck debugging is a method of debugging code by explaining it line-by-line to an inanimate object, like a rubber duck. The process of explaining the problem often helps you find the solution on your own. 
+Quacky takes this concept further by actively engaging with you through AI-powered conversation -
+it's a rubber duck that talks back!
+
+## Features
+
+- **Interactive AI Conversation**: Talk to Quacky about your problems and receive Socratic-style questions to help you think more deeply
+- **Multiple Modes**: Choose between Programming, General, and Custom modes to tailor Quacky's assistance to your needs
+- **Screen Sharing**: Share your screen to show Quacky what you're working on
+- **Webcam Support**: Enable your webcam for a more personal interaction
+- **Voice Input/Output**: Speak to Quacky and hear responses for a natural conversation flow
+
+## Modes
+
+- **Programming Mode**: Optimized for coding problems and technical discussions
+- **General Mode**: For everyday problem-solving and brainstorming
+- **Quack Pro**: Just for laughs
+- **Custom Mode**: Define your own prompt for specialized assistance
 
 ## Usage
-
-To get started, [create a free Gemini API key](https://aistudio.google.com/apikey) and add it to the `.env` file. Then:
 
 ```
 $ npm install && npm start
 ```
 
-We have provided several example applications on other branches of this repository:
+Then input your Gemini API key when prompted.
 
-- [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
-- [demos/GenWeather](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genweather)
-- [demos/GenList](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genlist)
+### Getting a Gemini API Key
 
-## Example
+1. Visit [Google AI Studio](https://aistudio.google.com/)
+2. Sign in with your Google account
+3. Navigate to the API keys section
+4. Create a new API key
+5. Copy and paste it into Quacky when prompted
 
-Below is an example of an entire application that will use Google Search grounding and then render graphs using [vega-embed](https://github.com/vega/vega-embed):
+### Using Quacky
 
-```typescript
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
-import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-
-export const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      json_graph: {
-        type: SchemaType.STRING,
-        description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
-      },
-    },
-    required: ["json_graph"],
-  },
-};
-
-export function Altair() {
-  const [jsonString, setJSONString] = useState<string>("");
-  const { client, setConfig } = useLiveAPIContext();
-
-  useEffect(() => {
-    setConfig({
-      model: "models/gemini-2.0-flash-exp",
-      systemInstruction: {
-        parts: [
-          {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
-          },
-        ],
-      },
-      tools: [{ googleSearch: {} }, { functionDeclarations: [declaration] }],
-    });
-  }, [setConfig]);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-      const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name
-      );
-      if (fc) {
-        const str = (fc.args as any).json_graph;
-        setJSONString(str);
-      }
-    };
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client]);
-
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (embedRef.current && jsonString) {
-      vegaEmbed(embedRef.current, JSON.parse(jsonString));
-    }
-  }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
-}
-```
+1. Select a mode (Programming, General, or Custom)
+2. Speak to Quacky about your problem or use the text input
+3. Quacky will ask questions to help you think through your problem
+4. You can share your screen or webcam to show Quacky what you're working on
+5. Click the info button (bottom right) for more information about Quacky
 
 ## development
 
@@ -99,7 +57,6 @@ Project consists of:
 
 - an Event-emitting websocket-client to ease communication between the websocket and the front-end
 - communication layer for processing audio in and out
-- a boilerplate view for starting to build your apps and view logs
 
 ## Available Scripts
 
@@ -122,5 +79,4 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-_This is an experiment showcasing the Live API, not an official Google product. We’ll do our best to support and maintain this experiment but your mileage may vary. We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators' rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://developers.google.com/terms/site-policies)._
+````
