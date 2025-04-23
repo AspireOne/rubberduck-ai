@@ -46,7 +46,8 @@ export function useLiveAPI({
 
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<LiveConfig>({
-    model: "models/gemini-2.0-flash-exp",
+    // TODO: is it correct?
+    model: "models/gemini-2.0-flash-001",
   });
   const [volume, setVolume] = useState(0);
 

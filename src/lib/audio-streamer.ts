@@ -30,7 +30,7 @@ export class AudioStreamer {
   public source: AudioBufferSourceNode;
   private isStreamComplete: boolean = false;
   private checkInterval: number | null = null;
-  private initialBufferTime: number = 0.1; //0.1 // 100ms initial buffer
+  private initialBufferTime: number = 0.5; // 300ms initial buffer
   private endOfQueueAudioSource: AudioBufferSourceNode | null = null;
 
   public onComplete = () => {};
@@ -122,7 +122,7 @@ export class AudioStreamer {
   }
 
   private scheduleNextBuffer() {
-    const SCHEDULE_AHEAD_TIME = 0.2;
+    const SCHEDULE_AHEAD_TIME = 0.5;
 
     while (
       this.audioQueue.length > 0 &&
@@ -195,7 +195,7 @@ export class AudioStreamer {
             ) {
               this.scheduleNextBuffer();
             }
-          }, 100) as unknown as number;
+          }, 50) as unknown as number;
         }
       }
     } else {
@@ -203,7 +203,7 @@ export class AudioStreamer {
         (this.scheduledTime - this.context.currentTime) * 1000;
       setTimeout(
         () => this.scheduleNextBuffer(),
-        Math.max(0, nextCheckTime - 50),
+        Math.max(0, nextCheckTime - 40),
       );
     }
   }
