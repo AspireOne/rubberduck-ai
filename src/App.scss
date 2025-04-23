@@ -149,8 +149,51 @@ body {
   .main-app-area {
     display: flex;
     flex: 1;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .app-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+  }
+
+  .main-audio-visualization-container {
+    position: absolute;
+    /* Better positioning that doesn't overlap with control tray */
+    top: 15%; /* Position in upper area of the lower third */
+    left: 90%;
+    transform: translateX(-50%);
+    z-index: 10;
+    margin-bottom: 120px; /* Increased space */
+
+    /* Scale the visualization to be more prominent */
+    .audioPulse {
+      transform: scale(4);
+
+      & > div {
+        width: 6px;
+        min-height: 8px;
+        background-color: var(--Blue-500);
+      }
+
+      &.active > div {
+        background-color: var(--Blue-500);
+        box-shadow: 0 0 10px var(--Blue-500);
+      }
+
+      &.hover > div {
+        animation: hover 1.8s infinite alternate ease-in-out;
+      }
+    }
   }
 
   .function-call {

@@ -6,7 +6,7 @@
   transition: all 0.5s;
 
   & > div {
-    background-color: var(--Neutral-30);
+    
     border-radius: 1000px;
     width: 4px;
     min-height: 4px;
@@ -25,8 +25,30 @@
     opacity: 1;
 
     & > div {
-      background-color: var(--Neutral-80);
+      
     }
+  }
+}
+
+/* Main visualization effects */
+.main-audio-visualization .audioPulse {
+  width: 120px;
+
+  & > div {
+    width: 8px;
+    min-height: 6px;
+    background-color: var(--Blue-500);
+    opacity: 0.5;
+  }
+
+  &.active > div {
+    background-color: var(--Blue-500);
+    opacity: 1;
+    box-shadow: 0 0 8px var(--Blue-500);
+  }
+
+  &.hover > div {
+    animation: hover 1.8s infinite alternate ease-in-out;
   }
 }
 

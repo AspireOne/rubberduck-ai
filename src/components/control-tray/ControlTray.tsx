@@ -22,7 +22,6 @@ import { UseMediaStreamResult } from "../../hooks/use-media-stream-mux";
 import { useScreenCapture } from "../../hooks/use-screen-capture";
 import { useWebcam } from "../../hooks/use-webcam";
 import { AudioRecorder } from "../../lib/audio-recorder";
-import AudioPulse from "../audio-pulse/AudioPulse";
 import "./control-tray.scss";
 
 export type ControlTrayProps = {
@@ -200,10 +199,6 @@ function ControlTray({
             <span className="material-symbols-outlined filled">mic_off</span>
           )}
         </button>
-
-        <div className="action-button no-action outlined">
-          <AudioPulse volume={volume} active={connected} hover={false} />
-        </div>
 
         {supportsVideo && (
           <>
