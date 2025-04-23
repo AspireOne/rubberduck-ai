@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from "react";
-import { useMode } from "../../App";
+import {useState} from "react";
+import {useMode} from "../../App";
 import cn from "classnames";
 import "./prompt-selector.scss";
-import { constants } from "../../constants";
+import {constants} from "../../constants";
 
 const PromptSelector = () => {
-  const { mode, setMode, customPrompt, setCustomPrompt } = useMode();
+  const {mode, setMode, customPrompt, setCustomPrompt} = useMode();
   const [isExpanded, setIsExpanded] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState(customPrompt);
 
-  const handleModeChange = (newMode: 'general' | 'programming' | 'custom') => {
+  const handleModeChange = (newMode: 'general' | 'programming' | 'custom' | 'quackPro') => {
     setMode(newMode);
     setIsExpanded(false);
   };
@@ -49,44 +49,53 @@ const PromptSelector = () => {
   };
 
   return (
-    <div className={cn("prompt-selector-container", { expanded: isExpanded })}>
+    <div className={cn("prompt-selector-container", {expanded: isExpanded})}>
       <div className="prompt-selector-header" onClick={handleExpandClick}>
         <span className="prompt-mode-label">
-          {mode === 'general' ? 'General Mode' : 
-           mode === 'programming' ? 'Programming Mode' : 
-           'Custom Prompt'}
+          {mode === 'general' ? 'General Mode' :
+            mode === 'programming' ? 'Programming Mode' :
+              mode === 'quackPro' ? 'Quack Pro' :
+                'Custom Prompt'}
         </span>
         <span className="material-symbols-outlined">
           {isExpanded ? 'expand_less' : 'expand_more'}
         </span>
       </div>
-      
+
       {isExpanded && (
         <div className="prompt-selector-content">
           <div className="prompt-options">
-            <div 
-              className={cn("prompt-option", { active: mode === 'general' })}
+            <div
+              className={cn("prompt-option", {active: mode === 'general'})}
               onClick={() => handleModeChange('general')}
             >
               <div className="option-header">
                 <span className="material-symbols-outlined">chat</span>
                 <h3>General Mode</h3>
               </div>
-              <p className="prompt-preview">{constants.generalModePrompt.substring(0, 100)}...</p>
             </div>
-            
-            <div 
-              className={cn("prompt-option", { active: mode === 'programming' })}
+
+            <div
+              className={cn("prompt-option", {active: mode === 'programming'})}
               onClick={() => handleModeChange('programming')}
             >
               <div className="option-header">
                 <span className="material-symbols-outlined">code</span>
                 <h3>Programming Mode</h3>
               </div>
-              <p className="prompt-preview">{constants.programmingPrompt.substring(0, 100)}...</p>
             </div>
             
-            <div className={cn("prompt-option custom", { active: mode === 'custom' })}>
+            <div
+              className={cn("prompt-option", {active: mode === 'quackPro'})}
+              onClick={() => handleModeChange('quackPro')}
+            >
+              <div className="option-header">
+                <span className="material-symbols-outlined">sentiment_very_satisfied</span>
+                <h3>Quack Pro</h3>
+              </div>
+            </div>
+
+            <div className={cn("prompt-option custom", {active: mode === 'custom'})}>
               <div className="option-header">
                 <span className="material-symbols-outlined">edit</span>
                 <h3>Custom Prompt</h3>
@@ -98,13 +107,13 @@ const PromptSelector = () => {
                 rows={5}
               />
               <div className="custom-prompt-actions">
-                <button 
+                <button
                   className="cancel-button"
                   onClick={handleCancel}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="save-button"
                   onClick={handleCustomPromptSave}
                   disabled={!editingPrompt.trim()}

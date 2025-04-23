@@ -64,7 +64,9 @@ function AltairComponent() {
               ? constants.programmingPrompt 
               : mode === "general" 
                 ? constants.generalModePrompt
-                : customPrompt,
+                : mode === "quackPro"
+                  ? constants.duckPrompt
+                  : customPrompt,
           },
         ],
       },

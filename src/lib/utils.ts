@@ -84,3 +84,9 @@ export function base64ToArrayBuffer(base64: string) {
   }
   return bytes.buffer;
 }
+
+// Local storage keys
+export const STORAGE_KEYS = {
+  CUSTOM_PROMPT: 'quacky_custom_prompt',
+  SELECTED_MODE: 'quacky_selected_mode'
+};

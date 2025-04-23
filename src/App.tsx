@@ -13,7 +13,7 @@ import {useLiveAPIContext} from "./contexts/LiveAPIContext";
 import {useApiKey} from "./api-key-provider";
 
 // Create a context for the mode
-export type ModeType = 'programming' | 'general' | 'custom';
+export type ModeType = 'programming' | 'general' | 'custom' | 'quackPro';
 
 export type ModeContextType = {
   mode: ModeType;
