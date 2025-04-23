@@ -11,6 +11,7 @@ import cn from "classnames";
 import {constants} from "./constants";
 import {useLiveAPIContext} from "./contexts/LiveAPIContext";
 import {useApiKey} from "./api-key-provider";
+import {STORAGE_KEYS} from "./lib/utils";
 
 // Create a context for the mode
 export type ModeType = 'programming' | 'general' | 'custom' | 'quackPro';
@@ -195,9 +196,27 @@ function AppContent() {
 }
 
 function App() {
-  const [mode, setMode] = useState<ModeType>('general');
-  const [customPrompt, setCustomPrompt] = useState<string>('');
+  // Initialize state from localStorage if available
+  const [mode, setMode] = useState<ModeType>(() => {
+    const savedMode = localStorage.getItem(STORAGE_KEYS.SELECTED_MODE);
+    return (savedMode as ModeType) || 'general';
+  });
+  
+  const [customPrompt, setCustomPrompt] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_KEYS.CUSTOM_PROMPT) || '';
+  });
+  
   const {apiKey, setApiKey} = useApiKey();
+
+  // Save mode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SELECTED_MODE, mode);
+  }, [mode]);
+
+  // Save custom prompt to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_PROMPT, customPrompt);
+  }, [customPrompt]);
 
   const handleApiKeySubmit = (newApiKey: string) => {
     setApiKey(newApiKey);
