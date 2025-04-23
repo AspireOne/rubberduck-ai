@@ -62,10 +62,8 @@ function AppContent() {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const {connected, volume} = useLiveAPIContext();
   const [randomTurn, setRandomTurn] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const lastTurnTimeRef = useRef<number>(0);
-  const lastFlipTimeRef = useRef<number>(0);
 
   // Function to trigger random turning when speaking
   useEffect(() => {
@@ -88,27 +86,6 @@ function AppContent() {
     }
   }, [connected, volume]);
 
-  // Function to trigger random flipping only when talking
-  useEffect(() => {
-    if (!connected || volume <= 0.05) return;
-
-    const flipInterval = setInterval(() => {
-      const currentTime = Date.now();
-      // Only flip if enough time has passed (5-12 seconds)
-      if (currentTime - lastFlipTimeRef.current > 5000) {
-        // Random chance to flip (adjusted to make it happen roughly every 5-12 seconds)
-        const shouldFlip = Math.random() < 0.15;
-
-        if (shouldFlip) {
-          setIsFlipped(prev => !prev);
-          lastFlipTimeRef.current = currentTime;
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(flipInterval);
-  }, [connected, volume]);
-
   const isVideoActive = !!videoStream;
 
   // Close sidebar when clicking outside
@@ -119,10 +96,10 @@ function AppContent() {
   return (
     <div className="streaming-console">
       <ModeSwitch/>
-      
+
       {/* Mobile sidebar toggle button */}
-      <button 
-        className="mobile-sidebar-toggle" 
+      <button
+        className="mobile-sidebar-toggle"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-label="Toggle sidebar"
       >
@@ -130,21 +107,21 @@ function AppContent() {
           {sidebarOpen ? 'close' : 'menu'}
         </span>
       </button>
-      
+
       {/* Overlay for mobile */}
-      <div 
-        className={cn("side-panel-overlay", { visible: sidebarOpen })} 
+      <div
+        className={cn("side-panel-overlay", {visible: sidebarOpen})}
         onClick={handleOverlayClick}
       ></div>
-      
+
       {/* Side panel with open class controlled by state - only use the mobile version on small screens */}
       <div className="desktop-sidebar">
-        <SidePanel />
+        <SidePanel/>
       </div>
-      
+
       {/* Mobile sidebar that overlays content */}
-      <div className={cn("mobile-sidebar", { open: sidebarOpen })}>
-        <SidePanel />
+      <div className={cn("mobile-sidebar", {open: sidebarOpen})}>
+        <SidePanel/>
       </div>
       <main>
         <div className="main-app-area">
@@ -172,7 +149,7 @@ function AppContent() {
                     width: "auto",
                     height: "auto",
                     transform: connected ?
-                      `${isFlipped ? 'scaleX(-1)' : ''} rotate(${volume > 0.05 ? (randomTurn || Math.min(12, volume * 25)) : 0}deg)` :
+                      `rotate(${volume > 0.05 ? (randomTurn || Math.min(12, volume * 25)) : 0}deg)` :
                       'none',
                     transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   }}
