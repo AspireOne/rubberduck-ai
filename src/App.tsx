@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState, useMemo} from "react";
+import {useEffect, useRef, useState, useMemo, useCallback} from "react";
 import "./App.scss";
 import {LiveAPIProvider} from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
@@ -24,6 +24,29 @@ function AppContent() {
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const { connected, volume } = useLiveAPIContext();
+  const [randomTurn, setRandomTurn] = useState(0);
+  const lastTurnTimeRef = useRef<number>(0);
+  
+  // Function to trigger random turning when speaking
+  useEffect(() => {
+    if (!connected || volume <= 0.05) return;
+    
+    const currentTime = Date.now();
+    if (currentTime - lastTurnTimeRef.current > 3000) { // Check if at least 3 seconds passed
+      const shouldTurn = Math.random() < 0.1; // 10% chance per check (happens every 100ms due to AudioPulse)
+      
+      if (shouldTurn) {
+        const newAngle = (Math.random() * 2 - 1) * 30; // Random angle between -30 and 30 degrees
+        setRandomTurn(newAngle);
+        lastTurnTimeRef.current = currentTime;
+        
+        // Reset turn after a delay
+        setTimeout(() => {
+          setRandomTurn(0);
+        }, 1500);
+      }
+    }
+  }, [connected, volume]);
 
   const isVideoActive = !!videoStream;
 
@@ -47,27 +70,44 @@ function AppContent() {
                 style={{
                   position: "relative",
                   display: "inline-block",
-                  animation: connected && volume > 0.05 ? `waddle ${Math.max(0.3, 1 - volume)}s infinite alternate ease-in-out` : "none",
                 }}
               >
                 <img 
                   style={{
                     maxWidth: "400px",
                     maxHeight: "400px",
-                    transform: `rotate(${Math.min(10, volume * 20)}deg)`,
-                    transition: "transform 0.1s ease-in-out",
+                    transform: connected && volume > 0.05 ? 
+                      `translateY(${Math.min(8, volume * 15)}px) rotate(${randomTurn || Math.min(12, volume * 25)}deg)` : 
+                      'none',
+                    transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   }} 
                   src={"https://pngimg.com/uploads/rubber_duck/rubber_duck_PNG54.png"} 
                   alt="Rubber duck"
                 />
                 <style>
                   {`
+                    .duck-container.waddling {
+                      animation: waddle ${Math.max(0.8, 1.5 - volume)}s infinite alternate cubic-bezier(0.445, 0.05, 0.55, 0.95);
+                    }
+                    
                     @keyframes waddle {
                       0% {
-                        transform: translateX(-${Math.min(15, volume * 30)}px) rotate(-${Math.min(5, volume * 10)}deg);
+                        transform: translateX(-${Math.min(25, volume * 50)}px) rotate(-${Math.min(8, volume * 15)}deg);
+                      }
+                      20% {
+                        transform: translateX(-${Math.min(18, volume * 36)}px) translateY(${Math.min(4, volume * 8)}px) rotate(-${Math.min(5, volume * 10)}deg);
+                      }
+                      40% {
+                        transform: translateY(${Math.min(8, volume * 16)}px) rotate(${Math.min(2, volume * 4)}deg);
+                      }
+                      60% {
+                        transform: translateY(${Math.min(10, volume * 20)}px) rotate(-${Math.min(2, volume * 4)}deg);
+                      }
+                      80% {
+                        transform: translateX(${Math.min(18, volume * 36)}px) translateY(${Math.min(4, volume * 8)}px) rotate(${Math.min(5, volume * 10)}deg);
                       }
                       100% {
-                        transform: translateX(${Math.min(15, volume * 30)}px) rotate(${Math.min(5, volume * 10)}deg);
+                        transform: translateX(${Math.min(25, volume * 50)}px) rotate(${Math.min(8, volume * 15)}deg);
                       }
                     }
                   `}
