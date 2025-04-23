@@ -6,21 +6,27 @@ import {Altair} from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import AudioPulse from "./components/audio-pulse/AudioPulse";
 import ApiKeyPrompt from "./components/api-key-prompt/ApiKeyPrompt";
+import PromptSelector from "./components/prompt-selector/PromptSelector";
 import cn from "classnames";
 import {constants} from "./constants";
 import {useLiveAPIContext} from "./contexts/LiveAPIContext";
 import {useApiKey} from "./api-key-provider";
 
 // Create a context for the mode
+export type ModeType = 'programming' | 'general' | 'custom';
+
 export type ModeContextType = {
-  mode: 'programming' | 'general';
-  setMode: (mode: 'programming' | 'general') => void;
+  mode: ModeType;
+  setMode: (mode: ModeType) => void;
+  customPrompt: string;
+  setCustomPrompt: (prompt: string) => void;
 };
 
 const ModeContext = createContext<ModeContextType>({
   mode: 'general',
-  setMode: () => {
-  },
+  setMode: () => {},
+  customPrompt: '',
+  setCustomPrompt: () => {},
 });
 
 export const useMode = () => useContext(ModeContext);
@@ -28,30 +34,9 @@ export const useMode = () => useContext(ModeContext);
 const uri = constants.wssEndpoint;
 
 // Component for the main app content
-// Mode switch component
+// Mode switch component - now uses the PromptSelector
 function ModeSwitch() {
-  const {mode, setMode} = useMode();
-
-  return (
-    <div className="mode-switch-container">
-      <span className={mode === 'general' ? 'active' : ''}>
-        General
-      </span>
-      <label className="switch">
-        <input
-          type="checkbox"
-          checked={mode === 'programming'}
-          onChange={() => setMode(mode === 'programming' ? 'general' : 'programming')}
-        />
-        <span className="slider">
-          <span className="slider-button"></span>
-        </span>
-      </label>
-      <span className={mode === 'programming' ? 'active' : ''}>
-        Programming
-      </span>
-    </div>
-  );
+  return <PromptSelector />;
 }
 
 function AppContent() {
@@ -210,7 +195,8 @@ function AppContent() {
 }
 
 function App() {
-  const [mode, setMode] = useState<'programming' | 'general'>('general');
+  const [mode, setMode] = useState<ModeType>('general');
+  const [customPrompt, setCustomPrompt] = useState<string>('');
   const {apiKey, setApiKey} = useApiKey();
 
   const handleApiKeySubmit = (newApiKey: string) => {
@@ -230,7 +216,7 @@ function App() {
   return (
     <div className="App">
       <LiveAPIProvider url={uri} apiKey={apiKey}>
-        <ModeContext.Provider value={{mode, setMode}}>
+        <ModeContext.Provider value={{mode, setMode, customPrompt, setCustomPrompt}}>
           <AppContent/>
         </ModeContext.Provider>
       </LiveAPIProvider>

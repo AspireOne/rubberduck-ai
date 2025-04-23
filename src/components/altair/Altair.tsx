@@ -40,7 +40,7 @@ const declaration: FunctionDeclaration = {
 function AltairComponent() {
   const [jsonString, setJSONString] = useState<string>("");
   const {client, setConfig} = useLiveAPIContext();
-  const {mode} = useMode();
+  const {mode, customPrompt} = useMode();
 
   useEffect(() => {
     setConfig({
@@ -60,7 +60,11 @@ function AltairComponent() {
       systemInstruction: {
         parts: [
           {
-            text: mode === "programming" ? constants.programmingPrompt : constants.generalModePrompt,
+            text: mode === "programming" 
+              ? constants.programmingPrompt 
+              : mode === "general" 
+                ? constants.generalModePrompt
+                : customPrompt,
           },
         ],
       },
@@ -70,7 +74,7 @@ function AltairComponent() {
         // {functionDeclarations: [declaration]},
       ],
     });
-  }, [setConfig, mode]);
+  }, [setConfig, mode, customPrompt]);
 
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
