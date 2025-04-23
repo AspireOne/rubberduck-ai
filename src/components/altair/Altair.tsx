@@ -19,6 +19,7 @@ import vegaEmbed from "vega-embed";
 import {useLiveAPIContext} from "../../contexts/LiveAPIContext";
 import {ToolCall} from "../../multimodal-live-types";
 import {constants} from "../../constants";
+import {ModeContextType, useMode} from "../../App";
 
 const declaration: FunctionDeclaration = {
   name: "render_altair",
@@ -39,6 +40,7 @@ const declaration: FunctionDeclaration = {
 function AltairComponent() {
   const [jsonString, setJSONString] = useState<string>("");
   const {client, setConfig} = useLiveAPIContext();
+  const {mode} = useMode();
 
   useEffect(() => {
     setConfig({
@@ -58,7 +60,7 @@ function AltairComponent() {
       systemInstruction: {
         parts: [
           {
-            text: constants.prompt,
+            text: mode === "programming" ? constants.programmingPrompt : constants.generalModePrompt,
           },
         ],
       },
@@ -68,7 +70,7 @@ function AltairComponent() {
         // {functionDeclarations: [declaration]},
       ],
     });
-  }, [setConfig]);
+  }, [setConfig, mode]);
 
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
