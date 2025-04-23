@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
+import {type FunctionDeclaration, SchemaType} from "@google/generative-ai";
+import {useEffect, useRef, useState, memo} from "react";
 import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-import { ToolCall } from "../../multimodal-live-types";
+import {useLiveAPIContext} from "../../contexts/LiveAPIContext";
+import {ToolCall} from "../../multimodal-live-types";
+import {constants} from "../../constants";
 
 const declaration: FunctionDeclaration = {
   name: "render_altair",
@@ -37,28 +38,34 @@ const declaration: FunctionDeclaration = {
 
 function AltairComponent() {
   const [jsonString, setJSONString] = useState<string>("");
-  const { client, setConfig } = useLiveAPIContext();
+  const {client, setConfig} = useLiveAPIContext();
 
   useEffect(() => {
     setConfig({
-      model: "models/gemini-2.0-flash-exp",
+      model: constants.model,
       generationConfig: {
+        temperature: 1,
+        maxOutputTokens: 5000,
         responseModalities: "audio",
         speechConfig: {
-          voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
-        },
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: "Puck" // ["Aoede", "Puck", "Charon", "Kore", "Fenrir", "Leda", "Orus", "Zephyr"]
+            }
+          }
+        }
       },
       systemInstruction: {
         parts: [
           {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
+            text: constants.prompt,
           },
         ],
       },
       tools: [
         // there is a free-tier quota for search
-        { googleSearch: {} },
-        { functionDeclarations: [declaration] },
+        // {googleSearch: {}},
+        // {functionDeclarations: [declaration]},
       ],
     });
   }, [setConfig]);
@@ -80,7 +87,7 @@ function AltairComponent() {
           () =>
             client.sendToolResponse({
               functionResponses: toolCall.functionCalls.map((fc) => ({
-                response: { output: { success: true } },
+                response: {output: {success: true}},
                 id: fc.id,
               })),
             }),
@@ -101,7 +108,9 @@ function AltairComponent() {
       vegaEmbed(embedRef.current, JSON.parse(jsonString));
     }
   }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
+
+  return <div>
+  </div>
 }
 
 export const Altair = memo(AltairComponent);

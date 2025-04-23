@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
   MultimodalLiveAPIClientConnection,
   MultimodalLiveClient,
 } from "../lib/multimodal-live-client";
-import { LiveConfig } from "../multimodal-live-types";
-import { AudioStreamer } from "../lib/audio-streamer";
-import { audioContext } from "../lib/utils";
+import {LiveConfig} from "../multimodal-live-types";
+import {AudioStreamer} from "../lib/audio-streamer";
+import {audioContext} from "../lib/utils";
 import VolMeterWorket from "../lib/worklets/vol-meter";
+import {constants} from "../constants";
 
 export type UseLiveAPIResults = {
   client: MultimodalLiveClient;
@@ -35,26 +36,39 @@ export type UseLiveAPIResults = {
 };
 
 export function useLiveAPI({
-  url,
-  apiKey,
-}: MultimodalLiveAPIClientConnection): UseLiveAPIResults {
+                             url,
+                             apiKey,
+                           }: MultimodalLiveAPIClientConnection): UseLiveAPIResults {
   const client = useMemo(
-    () => new MultimodalLiveClient({ url, apiKey }),
+    () => new MultimodalLiveClient({url, apiKey}),
     [url, apiKey],
   );
+  {
+
+  }
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<LiveConfig>({
-    // TODO: is it correct?
-    model: "models/gemini-2.0-flash-001",
+    model: constants.model,
+    generationConfig: {
+      temperature: 1,
+      maxOutputTokens: 5000,
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: "Puck" // "Puck" | "Charon" | "Kore" | "Fenrir" | "Aoede" | string
+          }
+        }
+      }
+    },
   });
   const [volume, setVolume] = useState(0);
 
   // register audio for streaming server -> speakers
   useEffect(() => {
     if (!audioStreamerRef.current) {
-      audioContext({ id: "audio-out" }).then((audioCtx: AudioContext) => {
+      audioContext({id: "audio-out"}).then((audioCtx: AudioContext) => {
         audioStreamerRef.current = new AudioStreamer(audioCtx);
         audioStreamerRef.current
           .addWorklet<any>("vumeter-out", VolMeterWorket, (ev: any) => {

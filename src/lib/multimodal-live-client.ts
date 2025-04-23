@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Content, GenerativeContentBlob, Part } from "@google/generative-ai";
-import { EventEmitter } from "eventemitter3";
-import { difference } from "lodash";
+import {Content, GenerativeContentBlob, Part} from "@google/generative-ai";
+import {EventEmitter} from "eventemitter3";
+import {difference} from "lodash";
 import {
   ClientContentMessage,
   isInterrupted,
@@ -37,7 +37,8 @@ import {
   ToolResponseMessage,
   type LiveConfig,
 } from "../multimodal-live-types";
-import { blobToJSON, base64ToArrayBuffer } from "./utils";
+import {blobToJSON, base64ToArrayBuffer} from "./utils";
+import {constants} from "../constants";
 
 /**
  * the events that this client will emit
@@ -69,15 +70,15 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
   public ws: WebSocket | null = null;
   protected config: LiveConfig | null = null;
   public url: string = "";
+
   public getConfig() {
-    return { ...this.config };
+    return {...this.config};
   }
 
-  constructor({ url, apiKey }: MultimodalLiveAPIClientConnection) {
+  constructor({url, apiKey}: MultimodalLiveAPIClientConnection) {
     super();
     url =
-      url ||
-      `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`;
+      url || constants.wssEndpoint;
     url += `?key=${apiKey}`;
     this.url = url;
     this.send = this.send.bind(this);
@@ -190,7 +191,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
     // this json also might be `contentUpdate { interrupted: true }`
     // or contentUpdate { end_of_turn: true }
     if (isServerContentMessage(response)) {
-      const { serverContent } = response;
+      const {serverContent} = response;
       if (isInterrupted(serverContent)) {
         this.log("receive.serverContent", "interrupted");
         this.emit("interrupted");
@@ -228,7 +229,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
 
         parts = otherParts;
 
-        const content: ModelTurn = { modelTurn: { parts } };
+        const content: ModelTurn = {modelTurn: {parts}};
         this.emit("content", content);
         this.log(`server.content`, response);
       }

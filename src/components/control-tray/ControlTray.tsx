@@ -106,6 +106,36 @@ function ControlTray({
     };
   }, [connected, client, muted, audioRecorder]);
 
+  // Add track ended event listeners to detect when stream is stopped externally
+  useEffect(() => {
+    if (activeVideoStream) {
+      const handleTrackEnded = () => {
+        // When any track ends, stop the stream and reset UI
+      setActiveVideoStream(null);
+      onVideoStreamChange(null);
+        // Also stop any active stream control
+        videoStreams.forEach((msr) => {
+          if (msr.isStreaming) {
+            msr.stop();
+    }
+        });
+  };
+
+      // Add ended event listener to all tracks
+      const tracks = activeVideoStream.getTracks();
+      tracks.forEach(track => {
+        track.addEventListener('ended', handleTrackEnded);
+      });
+
+      // Cleanup listeners when component unmounts or stream changes
+      return () => {
+        tracks.forEach(track => {
+          track.removeEventListener('ended', handleTrackEnded);
+        });
+      };
+    }
+  }, [activeVideoStream, onVideoStreamChange, videoStreams]);
+
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = activeVideoStream;
