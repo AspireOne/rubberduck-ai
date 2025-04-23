@@ -1,13 +1,15 @@
-import {useEffect, useRef, useState, useMemo, useCallback, createContext, useContext} from "react";
+import {useEffect, useRef, useState, createContext, useContext} from "react";
 import "./App.scss";
 import {LiveAPIProvider} from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import {Altair} from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import AudioPulse from "./components/audio-pulse/AudioPulse";
+import ApiKeyPrompt from "./components/api-key-prompt/ApiKeyPrompt";
 import cn from "classnames";
 import {constants} from "./constants";
-import { useLiveAPIContext } from "./contexts/LiveAPIContext";
+import {useLiveAPIContext} from "./contexts/LiveAPIContext";
+import {useApiKey} from "./api-key-provider";
 
 // Create a context for the mode
 export type ModeContextType = {
@@ -17,23 +19,19 @@ export type ModeContextType = {
 
 const ModeContext = createContext<ModeContextType>({
   mode: 'general',
-  setMode: () => {},
+  setMode: () => {
+  },
 });
 
 export const useMode = () => useContext(ModeContext);
-
-const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
-}
 
 const uri = constants.wssEndpoint;
 
 // Component for the main app content
 // Mode switch component
 function ModeSwitch() {
-  const { mode, setMode } = useMode();
-  
+  const {mode, setMode} = useMode();
+
   return (
     <div className="mode-switch-container" style={{
       position: 'absolute',
@@ -49,7 +47,7 @@ function ModeSwitch() {
       backdropFilter: 'blur(5px)',
       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
     }}>
-      <span style={{ 
+      <span style={{
         color: mode === 'general' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
         fontWeight: mode === 'general' ? 'bold' : 'normal',
         transition: 'color 0.3s ease'
@@ -62,11 +60,11 @@ function ModeSwitch() {
         width: '40px',
         height: '20px'
       }}>
-        <input 
-          type="checkbox" 
-          checked={mode === 'programming'} 
+        <input
+          type="checkbox"
+          checked={mode === 'programming'}
           onChange={() => setMode(mode === 'programming' ? 'general' : 'programming')}
-          style={{ opacity: 0, width: 0, height: 0 }}
+          style={{opacity: 0, width: 0, height: 0}}
         />
         <span className="slider" style={{
           position: 'absolute',
@@ -92,7 +90,7 @@ function ModeSwitch() {
           }}></span>
         </span>
       </label>
-      <span style={{ 
+      <span style={{
         color: mode === 'programming' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
         fontWeight: mode === 'programming' ? 'bold' : 'normal',
         transition: 'color 0.3s ease'
@@ -109,26 +107,25 @@ function AppContent() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-  const { connected, volume } = useLiveAPIContext();
+  const {connected, volume} = useLiveAPIContext();
   const [randomTurn, setRandomTurn] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const lastTurnTimeRef = useRef<number>(0);
   const lastFlipTimeRef = useRef<number>(0);
-  const mode = useMode();
-  
+
   // Function to trigger random turning when speaking
   useEffect(() => {
     if (!connected || volume <= 0.05) return;
-    
+
     const currentTime = Date.now();
     if (currentTime - lastTurnTimeRef.current > 3000) { // Check if at least 3 seconds passed
       const shouldTurn = Math.random() < 0.1; // 10% chance per check (happens every 100ms due to AudioPulse)
-      
+
       if (shouldTurn) {
         const newAngle = (Math.random() * 2 - 1) * 30; // Random angle between -30 and 30 degrees
         setRandomTurn(newAngle);
         lastTurnTimeRef.current = currentTime;
-        
+
         // Reset turn after a delay
         setTimeout(() => {
           setRandomTurn(0);
@@ -136,25 +133,25 @@ function AppContent() {
       }
     }
   }, [connected, volume]);
-  
+
   // Function to trigger random flipping only when talking
   useEffect(() => {
     if (!connected || volume <= 0.05) return;
-    
+
     const flipInterval = setInterval(() => {
       const currentTime = Date.now();
       // Only flip if enough time has passed (5-12 seconds)
       if (currentTime - lastFlipTimeRef.current > 5000) {
         // Random chance to flip (adjusted to make it happen roughly every 5-12 seconds)
         const shouldFlip = Math.random() < 0.15;
-        
+
         if (shouldFlip) {
           setIsFlipped(prev => !prev);
           lastFlipTimeRef.current = currentTime;
         }
       }
     }, 1000);
-    
+
     return () => clearInterval(flipInterval);
   }, [connected, volume]);
 
@@ -162,13 +159,13 @@ function AppContent() {
 
   return (
     <div className="streaming-console">
-      <ModeSwitch />
+      <ModeSwitch/>
       <SidePanel/>
       <main>
         <div className="main-app-area">
           {/* Audio Visualization as a standalone element positioned strategically */}
           <div className="main-audio-visualization-container">
-            <AudioPulse volume={volume} active={connected} hover={true} />
+            <AudioPulse volume={volume} active={connected} hover={true}/>
           </div>
 
           {/* APP content area */}
@@ -176,23 +173,23 @@ function AppContent() {
             <Altair/>
             {
               !isVideoActive &&
-              <div 
-                className={cn("duck-container", { waddling: connected && volume > 0.05 })}
+              <div
+                className={cn("duck-container", {waddling: connected && volume > 0.05})}
                 style={{
                   position: "relative",
                   display: "inline-block",
                 }}
               >
-                <img 
+                <img
                   style={{
                     maxWidth: "400px",
                     maxHeight: "400px",
-                    transform: connected ? 
-                      `${isFlipped ? 'scaleX(-1)' : ''} rotate(${volume > 0.05 ? (randomTurn || Math.min(12, volume * 25)) : 0}deg)` : 
+                    transform: connected ?
+                      `${isFlipped ? 'scaleX(-1)' : ''} rotate(${volume > 0.05 ? (randomTurn || Math.min(12, volume * 25)) : 0}deg)` :
                       'none',
                     transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                  }} 
-                  src={"https://pngimg.com/uploads/rubber_duck/rubber_duck_PNG54.png"} 
+                  }}
+                  src={"https://pngimg.com/uploads/rubber_duck/rubber_duck_PNG54.png"}
                   alt="Rubber duck"
                 />
                 <style>
@@ -250,12 +247,27 @@ function AppContent() {
 
 function App() {
   const [mode, setMode] = useState<'programming' | 'general'>('general');
+  const {apiKey, setApiKey} = useApiKey();
 
+  const handleApiKeySubmit = (newApiKey: string) => {
+    setApiKey(newApiKey);
+  };
+
+  // If there's no API key, show the prompt
+  if (!apiKey) {
+    return (
+      <div className="App">
+        <ApiKeyPrompt onSubmit={handleApiKeySubmit} />
+      </div>
+    );
+  }
+
+  // Otherwise, show the main app
   return (
     <div className="App">
-      <LiveAPIProvider url={uri} apiKey={API_KEY}>
-        <ModeContext.Provider value={{ mode, setMode }}>
-          <AppContent />
+      <LiveAPIProvider url={uri} apiKey={apiKey}>
+        <ModeContext.Provider value={{mode, setMode}}>
+          <AppContent/>
         </ModeContext.Provider>
       </LiveAPIProvider>
     </div>
