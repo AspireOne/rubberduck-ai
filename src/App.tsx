@@ -33,68 +33,21 @@ function ModeSwitch() {
   const {mode, setMode} = useMode();
 
   return (
-    <div className="mode-switch-container" style={{
-      position: 'absolute',
-      bottom: '20px',
-      right: '20px',
-      zIndex: 100,
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-      background: 'rgba(255, 255, 255, 0.1)',
-      padding: '8px 12px',
-      borderRadius: '20px',
-      backdropFilter: 'blur(5px)',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
-    }}>
-      <span style={{
-        color: mode === 'general' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
-        fontWeight: mode === 'general' ? 'bold' : 'normal',
-        transition: 'color 0.3s ease'
-      }}>
+    <div className="mode-switch-container">
+      <span className={mode === 'general' ? 'active' : ''}>
         General
       </span>
-      <label className="switch" style={{
-        position: 'relative',
-        display: 'inline-block',
-        width: '40px',
-        height: '20px'
-      }}>
+      <label className="switch">
         <input
           type="checkbox"
           checked={mode === 'programming'}
           onChange={() => setMode(mode === 'programming' ? 'general' : 'programming')}
-          style={{opacity: 0, width: 0, height: 0}}
         />
-        <span className="slider" style={{
-          position: 'absolute',
-          cursor: 'pointer',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: mode === 'programming' ? '#4285F4' : '#ccc',
-          transition: '0.4s',
-          borderRadius: '34px'
-        }}>
-          <span className="slider-button" style={{
-            position: 'absolute',
-            content: '""',
-            height: '16px',
-            width: '16px',
-            left: mode === 'programming' ? '22px' : '2px',
-            bottom: '2px',
-            backgroundColor: 'white',
-            transition: '0.4s',
-            borderRadius: '50%'
-          }}></span>
+        <span className="slider">
+          <span className="slider-button"></span>
         </span>
       </label>
-      <span style={{
-        color: mode === 'programming' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
-        fontWeight: mode === 'programming' ? 'bold' : 'normal',
-        transition: 'color 0.3s ease'
-      }}>
+      <span className={mode === 'programming' ? 'active' : ''}>
         Programming
       </span>
     </div>
@@ -110,6 +63,7 @@ function AppContent() {
   const {connected, volume} = useLiveAPIContext();
   const [randomTurn, setRandomTurn] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const lastTurnTimeRef = useRef<number>(0);
   const lastFlipTimeRef = useRef<number>(0);
 
@@ -157,10 +111,41 @@ function AppContent() {
 
   const isVideoActive = !!videoStream;
 
+  // Close sidebar when clicking outside
+  const handleOverlayClick = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="streaming-console">
       <ModeSwitch/>
-      <SidePanel/>
+      
+      {/* Mobile sidebar toggle button */}
+      <button 
+        className="mobile-sidebar-toggle" 
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
+        <span className="material-symbols-outlined">
+          {sidebarOpen ? 'close' : 'menu'}
+        </span>
+      </button>
+      
+      {/* Overlay for mobile */}
+      <div 
+        className={cn("side-panel-overlay", { visible: sidebarOpen })} 
+        onClick={handleOverlayClick}
+      ></div>
+      
+      {/* Side panel with open class controlled by state - only use the mobile version on small screens */}
+      <div className="desktop-sidebar">
+        <SidePanel />
+      </div>
+      
+      {/* Mobile sidebar that overlays content */}
+      <div className={cn("mobile-sidebar", { open: sidebarOpen })}>
+        <SidePanel />
+      </div>
       <main>
         <div className="main-app-area">
           {/* Audio Visualization as a standalone element positioned strategically */}
@@ -182,8 +167,10 @@ function AppContent() {
               >
                 <img
                   style={{
-                    maxWidth: "400px",
-                    maxHeight: "400px",
+                    maxWidth: "min(400px, 60vw)",
+                    maxHeight: "min(400px, 60vh)",
+                    width: "auto",
+                    height: "auto",
                     transform: connected ?
                       `${isFlipped ? 'scaleX(-1)' : ''} rotate(${volume > 0.05 ? (randomTurn || Math.min(12, volume * 25)) : 0}deg)` :
                       'none',
@@ -257,7 +244,7 @@ function App() {
   if (!apiKey) {
     return (
       <div className="App">
-        <ApiKeyPrompt onSubmit={handleApiKeySubmit} />
+        <ApiKeyPrompt onSubmit={handleApiKeySubmit}/>
       </div>
     );
   }

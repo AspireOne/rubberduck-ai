@@ -43,6 +43,7 @@
   font-style: normal;
   font-weight: 400;
   line-height: 160%; /* 20.8px */
+  z-index: 100;
 
   .hidden {
     display: none !important;
@@ -235,6 +236,39 @@
 .side-panel.open {
   width: 400px;
   height: 100vh;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .side-panel {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    width: 85%;
+    max-width: 320px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: left 0.3s ease;
+    
+    &.open {
+      left: 0;
+    }
+  }
+  
+  /* Add a semi-transparent overlay behind the sidebar when open */
+  .side-panel-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+  
+  .side-panel-overlay.visible {
+    display: block;
+  }
 }
 
 .side-panel-responses,

@@ -22,6 +22,8 @@ import { UseMediaStreamResult } from "../../hooks/use-media-stream-mux";
 import { useScreenCapture } from "../../hooks/use-screen-capture";
 import { useWebcam } from "../../hooks/use-webcam";
 import { AudioRecorder } from "../../lib/audio-recorder";
+import { useApiKey } from "../../api-key-provider";
+import ApiKeySettings from "../api-key-settings/ApiKeySettings";
 import "./control-tray.scss";
 
 export type ControlTrayProps = {
@@ -68,11 +70,13 @@ function ControlTray({
   const [inVolume, setInVolume] = useState(0);
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [muted, setMuted] = useState(false);
+  const [showApiKeySettings, setShowApiKeySettings] = useState(false);
   const renderCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
 
   const { client, connected, connect, disconnect, volume } =
     useLiveAPIContext();
+  const { apiKey, setApiKey } = useApiKey();
 
   useEffect(() => {
     if (!connected && connectButtonRef.current) {
@@ -188,37 +192,55 @@ function ControlTray({
   return (
     <section className="control-tray">
       <canvas style={{ display: "none" }} ref={renderCanvasRef} />
-      <nav className={cn("actions-nav", { disabled: !connected })}>
-        <button
-          className={cn("action-button mic-button")}
-          onClick={() => setMuted(!muted)}
-        >
-          {!muted ? (
-            <span className="material-symbols-outlined filled">mic</span>
-          ) : (
-            <span className="material-symbols-outlined filled">mic_off</span>
-          )}
-        </button>
+      {showApiKeySettings && (
+        <ApiKeySettings
+          currentApiKey={apiKey}
+          onSave={setApiKey}
+          onClose={() => setShowApiKeySettings(false)}
+        />
+      )}
+      <nav className="actions-nav">
+        <div className={cn("action-buttons-group", {disabled: !connected})}>
+          <button
+            className={cn("action-button mic-button")}
+            onClick={() => setMuted(!muted)}
+          >
+            {!muted ? (
+              <span className="material-symbols-outlined filled">mic</span>
+            ) : (
+              <span className="material-symbols-outlined filled">mic_off</span>
+            )}
+          </button>
 
-        {supportsVideo && (
-          <>
-            <MediaStreamButton
-              isStreaming={screenCapture.isStreaming}
-              start={changeStreams(screenCapture)}
-              stop={changeStreams()}
-              onIcon="cancel_presentation"
-              offIcon="present_to_all"
-            />
-            <MediaStreamButton
-              isStreaming={webcam.isStreaming}
-              start={changeStreams(webcam)}
-              stop={changeStreams()}
-              onIcon="videocam_off"
-              offIcon="videocam"
-            />
-          </>
-        )}
-        {children}
+          {supportsVideo && (
+            <>
+              <MediaStreamButton
+                isStreaming={screenCapture.isStreaming}
+                start={changeStreams(screenCapture)}
+                stop={changeStreams()}
+                onIcon="cancel_presentation"
+                offIcon="present_to_all"
+              />
+              <MediaStreamButton
+                isStreaming={webcam.isStreaming}
+                start={changeStreams(webcam)}
+                stop={changeStreams()}
+                onIcon="videocam_off"
+                offIcon="videocam"
+              />
+            </>
+          )}
+          {children}
+        </div>
+        
+        {/* API key button outside the disabled group */}
+        <button
+          className="action-button api-key-button"
+          onClick={() => setShowApiKeySettings(true)}
+          title="API Key Settings"
+        >
+          <span className="material-symbols-outlined">key</span>
+        </button>
       </nav>
 
       <div className={cn("connection-container", { connected })}>
