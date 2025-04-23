@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState, useMemo} from "react";
 import "./App.scss";
 import {LiveAPIProvider} from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
@@ -42,10 +42,37 @@ function AppContent() {
             <Altair/>
             {
               !isVideoActive &&
-              <img style={{
-                maxWidth: "400px",
-                maxHeight: "400px",
-              }} src={"https://pngimg.com/uploads/rubber_duck/rubber_duck_PNG54.png"} alt="Rubber duck"/>
+              <div 
+                className={cn("duck-container", { waddling: connected && volume > 0.05 })}
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  animation: connected && volume > 0.05 ? `waddle ${Math.max(0.3, 1 - volume)}s infinite alternate ease-in-out` : "none",
+                }}
+              >
+                <img 
+                  style={{
+                    maxWidth: "400px",
+                    maxHeight: "400px",
+                    transform: `rotate(${Math.min(10, volume * 20)}deg)`,
+                    transition: "transform 0.1s ease-in-out",
+                  }} 
+                  src={"https://pngimg.com/uploads/rubber_duck/rubber_duck_PNG54.png"} 
+                  alt="Rubber duck"
+                />
+                <style>
+                  {`
+                    @keyframes waddle {
+                      0% {
+                        transform: translateX(-${Math.min(15, volume * 30)}px) rotate(-${Math.min(5, volume * 10)}deg);
+                      }
+                      100% {
+                        transform: translateX(${Math.min(15, volume * 30)}px) rotate(${Math.min(5, volume * 10)}deg);
+                      }
+                    }
+                  `}
+                </style>
+              </div>
             }
             <video
               className={cn("stream", {
